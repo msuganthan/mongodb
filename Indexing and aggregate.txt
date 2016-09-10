@@ -1,0 +1,210 @@
+*****************Indexing*******************
+
+
+Indexing a database is like creating an index for a book. This makes it much quicker to look up data.
+
+Analyze:
+========
+
+	To generate a large set of data. This can take a minute to generate 500,000 documents.
+
+	for(i= 0; i < 500000; i++){
+		db.suganthanStudies4.insert(
+		{"account":"account"+i,
+		"age":Math.floor(Math.random() * 90)});}
+
+ExecutionStats to see how long this query took:
+================================================
+
+	db.suganthanStudies4.find({"age":50}).explain("executionStats")
+	{
+		"cursor" : "BasicCursor",
+		"isMultiKey" : false,
+		"n" : 5525,
+		"nscannedObjects" : 500000,
+		"nscanned" : 500000,
+		"nscannedObjectsAllPlans" : 500000,
+		"nscannedAllPlans" : 500000,
+		"scanAndOrder" : false,
+		"indexOnly" : false,
+		"nYields" : 3906,
+		"nChunkSkips" : 0,
+		"millis" : 206,		//millis
+		"allPlans" : [
+			{
+				"cursor" : "BasicCursor",
+				"isMultiKey" : false,
+				"n" : 5525,
+				"nscannedObjects" : 500000,
+				"nscanned" : 500000,
+				"scanAndOrder" : false,
+				"indexOnly" : false,
+				"nChunkSkips" : 0
+			}
+		],
+		"server" : "msuganthan-TECRA-C50-C:27017",
+		"filterSet" : false,
+		"stats" : {
+			"type" : "COLLSCAN",
+			"works" : 500002,
+			"yields" : 3906,
+			"unyields" : 3906,
+			"invalidates" : 0,
+			"advanced" : 5525,
+			"needTime" : 494476,
+			"needFetch" : 0,
+			"isEOF" : 1,
+			"docsTested" : 500000,
+			"children" : [ ]
+		}
+	}
+
+	Now time is reduced to 206 and number of scanned objects reduced to 500000
+
+Cardinality:
+============
+
+	Cardinality defines the number of distinct values a field may have. Sex for example would be either M or F which would be a low cardinality. Email would be different for every user and hence would have a high cardinality. The higher the cardinality the more valuable an index on that field would be, however basing indexes on grouping to improve queries is most important.
+
+	db.suganthanStudies4.ensureIndex({"age" : 1, "account" : 1})
+
+	db.suganthanStudies4.find({"age":50}).explain("executionStats")
+	{
+		"cursor" : "BtreeCursor age_1_account_1",
+		"isMultiKey" : false,
+		"n" : 5525,
+		"nscannedObjects" : 5525,
+		"nscanned" : 5525,
+		"nscannedObjectsAllPlans" : 5525,
+		"nscannedAllPlans" : 5525,
+		"scanAndOrder" : false,
+		"indexOnly" : false,
+		"nYields" : 43,
+		"nChunkSkips" : 0,
+		"millis" : 22,
+		"indexBounds" : {
+			"age" : [
+				[
+					50,
+					50
+				]
+			],
+			"account" : [
+				[
+					{
+						"$minElement" : 1
+					},
+					{
+						"$maxElement" : 1
+					}
+				]
+			]
+		},
+		"allPlans" : [
+			{
+				"cursor" : "BtreeCursor age_1_account_1",
+				"isMultiKey" : false,
+				"n" : 5525,
+				"nscannedObjects" : 5525,
+				"nscanned" : 5525,
+				"scanAndOrder" : false,
+				"indexOnly" : false,
+				"nChunkSkips" : 0,
+				"indexBounds" : {
+					"age" : [
+						[
+							50,
+							50
+						]
+					],
+					"account" : [
+						[
+							{
+								"$minElement" : 1
+							},
+							{
+								"$maxElement" : 1
+							}
+						]
+					]
+				}
+			}
+		],
+		"server" : "msuganthan-TECRA-C50-C:27017",
+		"filterSet" : false,
+		"stats" : {
+			"type" : "FETCH",
+			"works" : 5526,
+			"yields" : 43,
+			"unyields" : 43,
+			"invalidates" : 0,
+			"advanced" : 5525,
+			"needTime" : 0,
+			"needFetch" : 0,
+			"isEOF" : 1,
+			"alreadyHasObj" : 0,
+			"forcedFetches" : 0,
+			"matchTested" : 0,
+			"children" : [
+				{
+					"type" : "IXSCAN",
+					"works" : 5526,
+					"yields" : 43,
+					"unyields" : 43,
+					"invalidates" : 0,
+					"advanced" : 5525,
+					"needTime" : 0,
+					"needFetch" : 0,
+					"isEOF" : 1,
+					"keyPattern" : "{ age: 1.0, account: 1.0 }",
+					"isMultiKey" : 0,
+					"boundsVerbose" : "field #0['age']: [50.0, 50.0], field #1['account']: [MinKey, MaxKey]",
+					"yieldMovedCursor" : 0,
+					"dupsTested" : 0,
+					"dupsDropped" : 0,
+					"seenInvalidated" : 0,
+					"matchTested" : 0,
+					"keysExamined" : 5525,
+					"children" : [ ]
+				}
+			]
+		}
+	}
+
+
+	Now time is reduced to 22 and number of scanned objects reduced to 5525
+
+
+	This query is quicker because it can search directly for the age 50 and ignore everything else
+
+See all your indexes:
+=====================
+
+	db.suganthanStudies4.getIndexes()
+
+Delete indexing:
+================
+
+	db.suganthanStudies4.dropIndex("age_1_account_1")
+
+Index Unique:
+=============
+
+	Indexing something that is unique to each document can be helpful if you use limits which avoids searching further after the limit has been reached. It can also be helpful is you force the item to be unique.
+
+	db.suganthanStudies4.find({"account" : "account100"}).explain("executionStats")
+
+		"millis" : 24
+
+	db.suganthanStudies4.ensureIndex({"account" : 1}, {"unique" : true})
+
+		"millis" : 0
+
+Sparse:
+=======	
+	
+	At times you may wish to index a field that may have null as a value for many documents. Sparse can be used in those situations
+
+	db.suganthanStudies4.ensureIndex({"account" : 1}, {"unique" : true, "sparse" : true})
+	
+
