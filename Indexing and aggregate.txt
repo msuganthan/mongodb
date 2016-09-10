@@ -194,7 +194,11 @@ Index Unique:
 
 	db.suganthanStudies4.find({"account" : "account100"}).explain("executionStats")
 
-		"millis" : 24
+		"millis" : 201
+
+	db.suganthanStudies4.ensureIndex({"account" : 1})
+
+		"millis" : 0
 
 	db.suganthanStudies4.ensureIndex({"account" : 1}, {"unique" : true})
 
@@ -208,3 +212,6 @@ Sparse:
 	db.suganthanStudies4.ensureIndex({"account" : 1}, {"unique" : true, "sparse" : true})
 	
 
+************** Aggregations ****************
+
+Can be used to perform operations on multiple documents
