@@ -1,0 +1,305 @@
+***************Inserting, Updating and Deleting Documents****************
+
+Insert:
+=======
+
+	db.suganthanStudies2.insert({"name": "Barry Bonds"})
+
+Insert an array of elements:
+============================
+	
+	db.suganthanStudies2.insert([{ name: "Babe Ruth"}, {name: "Hank Aaron"}]  )
+
+
+Object Id:
+==========
+
+	3. Object IDs or _id is a unique key made up of 24 hexadecimal numbers, or 2 digits for each byte
+ 
+	a. The first 4 bytes make up a time stamp
+	 
+	b. The next 3 represent a unique id for the computer that generated the id
+	 
+	c. The next 2 bytes represent a unique id based on the process for the computer
+	 
+	d. The last 3 bytes are incrementing numbers for each generated id
+
+Delete a document:
+==================
+
+	db.suganthanStudies2.remove({name: "Babe Ruth"})
+
+Update a document:
+===================
+
+	db.suganthanStudies2.update({name: "Hank Aaron"},
+	... {$set: {name: "Hank Louis Aaron", "Home Runs": 755}}
+	... )
+
+Update Multiple Document:
+=========================
+
+	db.suganthanStudies2.insert([
+          {"name" : "Babe Ruth", "Hall Of Fame" : "Inductee"}, 
+	  {"name" : "Ty Cobb", "Hall Of Fame" : "Inductee"}, 
+	  {"name" : "Walter Johnson", "Hall Of Fame" : "Inductee"}, 
+	  {"name" : "Christy Mathewson", "Hall Of Fame" : "Inductee"},
+	  {"name" : "Honus Wagner", "Hall Of Fame" : "Inductee"}
+	])
+
+	db.suganthanStudies2.update(
+		{"Hall Of Fame": "Inductee"}, 
+		{$set: {"Hall Of Fame": "Inducted in 1936"}}, 
+		{multi: true} 
+	)
+
+Replace a document:
+===================
+
+	db.suganthanStudies2.save({ 
+		"name": "Hank Louis Aaron", 
+		"Home Runs": 755, 
+		"Hall of Fame": "Inducted in 1988" 
+	})
+
+Increment a value:
+==================
+
+	db.suganthanStudies2.update( 
+		{name: "Hank Louis Aaron"}, 
+		{$inc: {"Home Runs": 1}} 
+	)
+
+
+Add an array:
+==============
+
+	db.suganthanStudies2.update(
+		{"name": "Babe Ruth"}, 
+		{"$push": 
+			{"Record": 
+				{"Single Season HRS": 73, 
+				 "HRs Careers" : 762, 
+				 "Walks": 232
+				} 
+			}
+		} 
+	)
+	
+Push Multiple value:
+====================
+
+	db.suganthanStudies2.update(
+		{"name": "Babe Ruth"},
+		{"$push":
+			{
+			   "Average Batting":
+			   {"$each": [.223, .261, .283, .248, .301]}
+			} 
+		})
+
+Push Multiple Values with slice:
+================================
+
+	db.suganthanStudies2.update( 
+		{"name": "Babe Ruth"}, 
+		{"$push": 
+			{    
+			   "Best Home Run Years": 
+			   {"$each": [223, 261, 283, 248, 301, 468, 457], 
+				     "$slice": -5
+			   } 
+                        }
+		})
+
+AddToSet adds a value only if it doesn't already exist:
+========================================================
+	
+	db.suganthanStudies2.update( 
+		{"name": "Babe Ruth"}, 
+		{"$addToSet": 
+			{"Best Home Run Years": 47}
+		}
+	)
+
+Remove the last item added to an array:
+=======================================
+
+	db.suganthanStudies2.update( 
+		{"name": "Babe Ruth"}, 
+		{"$pop": 
+			{"Best Home Run Years": 1}
+		}
+	)
+
+Remove the first item:
+======================
+
+	db.suganthanStudies2.update( 
+		{"name": "Babe Ruth"}, 
+		{"$pop": 
+			{"Best Home Run Years": -1}
+		}
+	)
+
+Remove a specific value:
+========================
+
+	db.suganthanStudies2.update( 
+		{"name": "Babe Ruth"}, 
+		{"$pull": 
+			{"Best Home Run Years": 73}
+		}
+	)
+	
+
+*******************Querying the database****************************
+
+Most basic:
+
+	db.suganthanStudies2.find().pretty()
+
+Document having states WA and male:
+===================================
+
+	db.suganthanStudies3.insert([
+		{"name" : "Dale Cooper", "street" : "123 Main St", "city" : "Yakima", "state" : "WA", "dob" : new Date(1959, 2, 22), "sex" : "M", "gpa" : 3.5, "status" : "student", "tests" : [10, 9, 8], "contact info" : {"email" : "dc@aol.com", "phone" : "792-223-8901"}}, 
+		{"name" : "Harry Truman", "street" : "202 South St", "city" : "Vancouver", "state" : "WA", "dob" : new Date(1946, 1, 24), "sex" : "M", "gpa" : 3.4, "status" : "student", "tests" : [8, 9, 8], "contact info" : {"email" : "ht@aol.com", "phone" : "792-223-9810"}},
+		{"name" : "Shelly Johnson", "street" : "9 Pond Rd", "city" : "Sparks", "state" : "NV", "dob" : new Date(1970, 12, 12), "sex" : "F", "gpa" : 2.9, "status" : "dropout", "tests" : [10, 8, 0], "contact info" : {"email" : "sj@aol.com", "phone" : "792-223-6734"}},
+		{"name" : "Bobby Briggs", "street" : "14 12th St", "city" : "San Diego", "state" : "CA", "dob" : new Date(1967, 5, 24), "sex" : "M", "gpa" : 2.0, "status" : "student", "tests" : [5, 4, 6], "contact info" : {"email" : "bb@aol.com", "phone" : "792-223-6178"}},
+		{"name" : "Donna Hayward", "street" : "120 16th St", "city" : "Davenport", "state" : "IA", "dob" : new Date(1970, 3, 24), "sex" : "F", "gpa" : 3.7, "status" : "student", "tests" : [10, 8, 8], "contact info" : {"email" : "dh@aol.com", "phone" : "792-223-2001"}},
+		{"name" : "Audrey Horne", "street" : "342 19th St", "city" : "Detroit", "state" : "MI", "dob" : new Date(1965, 2, 1), "sex" : "F", "gpa" : 3.0, "status" : "student", "tests" : [9, 9, 8], "contact info" : {"email" : "ah@aol.com", "phone" : "792-223-2002"}},
+		{"name" : "James Hurley", "street" : "2578 Cliff St", "city" : "Queens", "state" : "NY", "dob" : new Date(1967, 1, 2), "sex" : "M", "gpa" : 2.9, "status" : "dropout", "tests" : [8, 9, 0], "contact info" : {"email" : "jh@aol.com", "phone" : "792-223-1890"}},
+		{"name" : "Lucy Moran", "street" : "178 Dover St", "city" : "Hollywood", "state" : "CA", "dob" : new Date(1954, 11, 27), "sex" : "F", "gpa" : 3.0, "status" : "student", "tests" : [9, 9, 8], "contact info" : {"email" : "lm@aol.com", "phone" : "792-223-9678"}},
+		{"name" : "Tommy Hill", "street" : "672 High Plains", "city" : "Tucson", "state" : "AZ", "dob" : new Date(1951, 12, 21), "sex" : "M", "gpa" : 3.7, "status" : "student", "tests" : [10, 9, 9], "contact info" : {"email" : "th@aol.com", "phone" : "792-223-1115"}},
+		{"name" : "Andy Brennan", "street" : "281 4th St", "city" : "Jacksonville", "state" : "NC", "dob" : new Date(1960, 12, 27), "sex" : "M", "gpa" : 2.5, "status" : "student", "tests" : [7, 9, 8], "contact info" : {"email" : "ab@aol.com", "phone" : "792-223-8902"}},
+	])
+
+	db.suganthanStudies3.find(
+		{state: "WA", sex: "M"}
+	)
+
+Document having states WA and male and return only name and dob:
+================================================================
+
+	db.suganthanStudies3.find(
+		{state: "WA", sex: "M"}, 
+		{name: 1, dob: 1}
+	)
+Document having states WA and male and return only name and dob and don't return _id
+=====================================================================================
+
+	db.suganthanStudies3.find(
+		{state: "WA", sex: "M"}, 
+		{name: 1, dob: 1, _id: 0}
+	)
+
+Document having gpa in between 3 and 3.5 and return only name and dob and don't return _id:
+===========================================================================================
+	
+	db.suganthanStudies3.find(
+		{gpa: {"$gt": 3, "$lt": 3.5}}, 
+		{name: 1, dob: 1, _id: 0}
+	).pretty()
+
+People born after Jan 1, 1969:
+==============================
+	
+	db.suganthanStudies3.find(
+		{dob: {"$gt": new Date(01/01/1969)}}, 
+		{name: 1, dob: 1, _id: 0}
+	)	
+	
+Student that is not a male:
+===========================
+
+	db.suganthanStudies3.find(
+		{"sex": {"$ne": "M"}},
+		{name: 1, dob: 1, _id: 0}
+	)
+
+GPAs of 3.4, 3.5, 3.6, or 3.7
+==============================
+
+	db.suganthanStudies3.find(
+		{"gpa": {"$in": [3.4, 3.5, 3.6,3.7]}},
+		{name: 1, dob: 1, gpa: 1,_id: 0}
+	).pretty()
+
+GPAs except for 3.4 - 3.7 
+==========================
+
+	db.suganthanStudies3.find(
+		{"gpa": {"$nin": [3.4, 3.5, 3.6,3.7]}},
+		{name: 1, dob: 1, gpa: 1,_id: 0}
+	).pretty()
+
+Do an or check with multiple keys use $or:
+==========================================
+
+	db.suganthanStudies3.find(
+		{"$or": [{"status": "dropout"}, {"gpa" : {"$lt" : 3.0}}],
+		{name: 1, dob: 1, gpa: 1,_id: 0}
+	).pretty()
+
+$not can be used to find every gpa not greater then 3.0 :
+========================================================
+
+	db.suganthanStudies3.find(
+		{"gpa": {$not : {$gt : 3.0}}},
+		{name: 1, dob: 1, gpa: 1,_id: 0}
+	).pretty()
+
+Get the first 3 results with:
+=============================
+
+	db.suganthanStudies3.find(
+		{"gpa": {$not : {$gt : 3.0}}},
+		{name: 1, dob: 1, gpa: 1,_id: 0}
+	).limit(3).pretty()
+
+Skip the first 2: 
+=================
+
+	db.suganthanStudies3.find(
+		{"gpa": {$not : {$gt : 3.0}}},
+		{name: 1, dob: 1, gpa: 1,_id: 0}
+	).skip(2).pretty()
+
+Sort them by name:
+==================
+
+	db.suganthanStudies3.find(
+		{"gpa": {$not : {$gt : 3.0}}},
+		{name: 1, dob: 1, gpa: 1,_id: 0}
+	).skip(2).sort({"name":1}).pretty()
+
+Use a regular expression to search for everyone whose name starts with D:
+=========================================================================
+
+	db.suganthanStudies3.find(
+		{"name": /^D.*$/},
+		{name: 1, dob: 1, gpa: 1,_id: 0}
+	).pretty()
+
+
+Students with a 10 and a 0 on tests:
+====================================
+
+	db.suganthanStudies3.find(
+		{"tests": {$all: [0, 8]}},
+		{name: 1, dob: 1, gpa: 1,_id: 0}
+	).pretty()	
+
+Students that got a 10 on the first test (Arrays are 0 Indexed):
+=================================================================
+
+	db.suganthanStudies3.find(
+		{"tests.0": {$all: [0, 8]}},
+		{name: 1, dob: 1, gpa: 1,_id: 0}
+	).pretty()
+
+Email for Lucy Moran with the dot operator:
+===========================================
+
+	db.suganthanStudies3.find({"name" : "Lucy Moran"}, {"name" : 1, "contact info.email" : 1, "_id" : 0})
