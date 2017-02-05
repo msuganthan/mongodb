@@ -1,4 +1,4 @@
-package org.suganthan;
+package org.suganthan.model;
 
 public class Recognition {
 

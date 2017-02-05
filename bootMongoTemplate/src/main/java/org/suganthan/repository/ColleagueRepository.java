@@ -1,8 +1,9 @@
-package org.suganthan;
+package org.suganthan.repository;
 
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.suganthan.model.Colleague;
 
 
 

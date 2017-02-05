@@ -1,4 +1,4 @@
-package org.suganthan;
+package org.suganthan.model;
 
 import java.util.List;
 
